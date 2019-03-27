@@ -9,6 +9,8 @@ from memory import ReplayMemory
 from test import test
 from tqdm import tqdm
 
+from tensorboardX import SummaryWriter
+
 
 parser = argparse.ArgumentParser(description='Rainbow')
 parser.add_argument('--seed', type=int, default=123, help='Random seed')
@@ -40,6 +42,8 @@ parser.add_argument('--evaluation-interval', type=int, default=100000, metavar='
 parser.add_argument('--evaluation-episodes', type=int, default=10, metavar='N', help='Number of evaluation episodes to average over')
 parser.add_argument('--evaluation-size', type=int, default=500, metavar='N', help='Number of transitions to use for validating Q')
 parser.add_argument('--render', action='store_true', help='Display screen (testing only)')
+parser.add_argument('--tensorboard-key', type=str, required=True, help='Tensorboard key')
+parser.add_argument('--tensorboard-run-name', type=str, required=True, help='Tensorboard run name')
 
 
 # Setup
@@ -92,6 +96,7 @@ if args.evaluate:
   print('Avg. reward: ' + str(avg_reward) + ' | Avg. Q: ' + str(avg_Q))
 else:
   # Training loop
+  writer = SummaryWriter('runs/' + args.tensorboard_run_name)
   dqn.train()
   T, done = 0, True
   for T in tqdm(range(args.T_max)):
@@ -103,6 +108,7 @@ else:
 
     action = dqn.act(state)  # Choose an action greedily (with noisy weights)
     next_state, reward, done = env.step(action)  # Step
+    # TODO: add reward shaping here
     if args.reward_clip > 0:
       reward = max(min(reward, args.reward_clip), -args.reward_clip)  # Clip rewards
     mem.append(state, action, reward, done)  # Append transition to memory
@@ -119,6 +125,8 @@ else:
         dqn.eval()  # Set DQN (online network) to evaluation mode
         avg_reward, avg_Q = test(args, T, dqn, val_mem)  # Test
         log('T = ' + str(T) + ' / ' + str(args.T_max) + ' | Avg. reward: ' + str(avg_reward) + ' | Avg. Q: ' + str(avg_Q))
+        writer.add_scalar('{}/avg_reward'.format(args.tensorboard_key), avg_reward, T)
+        writer.add_scalar('{}/avg_Q'.format(args.tensorboard_key), avg_Q, T)
         dqn.train()  # Set DQN (online network) back to training mode
 
       # Update target network
