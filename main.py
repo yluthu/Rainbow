@@ -123,7 +123,7 @@ else:
 
       if T % args.evaluation_interval == 0:
         dqn.eval()  # Set DQN (online network) to evaluation mode
-        avg_reward, avg_Q = test(args, T, dqn, val_mem)  # Test
+        avg_reward, avg_Q = test(args, T, dqn, val_mem, args.tensorboard_run_name + '.pth')  # Test
         log('T = ' + str(T) + ' / ' + str(args.T_max) + ' | Avg. reward: ' + str(avg_reward) + ' | Avg. Q: ' + str(avg_Q))
         writer.add_scalar('{}/avg_reward'.format(args.tensorboard_key), avg_reward, T)
         writer.add_scalar('{}/avg_Q'.format(args.tensorboard_key), avg_Q, T)

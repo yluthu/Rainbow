@@ -12,7 +12,7 @@ Ts, rewards, Qs, best_avg_reward = [], [], [], -1e10
 
 
 # Test DQN
-def test(args, T, dqn, val_mem, evaluate=False):
+def test(args, T, dqn, val_mem, evaluate=False, save_filename='model.pth'):
   global Ts, rewards, Qs, best_avg_reward
   env = Env(args)
   env.eval()
@@ -54,7 +54,7 @@ def test(args, T, dqn, val_mem, evaluate=False):
     # Save model parameters if improved
     if avg_reward > best_avg_reward:
       best_avg_reward = avg_reward
-      dqn.save('results')
+      dqn.save('results', save_filename)
 
   # Return average reward and Q-value
   return avg_reward, avg_Q
