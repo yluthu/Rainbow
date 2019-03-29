@@ -8,6 +8,7 @@ from env import Env
 from memory import ReplayMemory
 from test import test
 from tqdm import tqdm
+from shaping import early_penalty_late_reward
 
 from tensorboardX import SummaryWriter
 
@@ -37,6 +38,7 @@ parser.add_argument('--lr', type=float, default=0.0000625, metavar='η', help='L
 parser.add_argument('--adam-eps', type=float, default=1.5e-4, metavar='ε', help='Adam epsilon')
 parser.add_argument('--batch-size', type=int, default=32, metavar='SIZE', help='Batch size')
 parser.add_argument('--learn-start', type=int, default=int(80e3), metavar='STEPS', help='Number of steps before starting training')
+parser.add_argument('--shaping', type=str, default='none', metavar='SHAPING', help='Reward shaping strategy')
 parser.add_argument('--evaluate', action='store_true', help='Evaluate only')
 parser.add_argument('--evaluation-interval', type=int, default=100000, metavar='STEPS', help='Number of training steps between evaluations')
 parser.add_argument('--evaluation-episodes', type=int, default=10, metavar='N', help='Number of evaluation episodes to average over')
@@ -108,7 +110,9 @@ else:
 
     action = dqn.act(state)  # Choose an action greedily (with noisy weights)
     next_state, reward, done = env.step(action)  # Step
-    # TODO: add reward shaping here
+    # Reward shaping
+    if args.shaping == 'early_penalty_late_reward':
+        reward = early_penalty_late_reward(reward, T)
     if args.reward_clip > 0:
       reward = max(min(reward, args.reward_clip), -args.reward_clip)  # Clip rewards
     mem.append(state, action, reward, done)  # Append transition to memory
