@@ -113,6 +113,8 @@ else:
     # Reward shaping
     if args.shaping == 'early_penalty_late_reward':
         reward = early_penalty_late_reward(reward, T)
+    elif args.shaping == 'early_reward_late_penalty':
+        reward = early_penalty_late_reward(reward, T, r0=1, rt=0.2, p0=0.1, pt=0.9)
     if args.reward_clip > 0:
       reward = max(min(reward, args.reward_clip), -args.reward_clip)  # Clip rewards
     mem.append(state, action, reward, done)  # Append transition to memory
